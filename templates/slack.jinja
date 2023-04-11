@@ -1,0 +1,45 @@
+{
+	"attachments": [
+		{
+			"color": "#36a142",
+			"blocks": [
+				{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text": "Auto Deploy Notification"
+					}
+				},
+				{
+					"type": "section",
+					"fields": [
+						{
+							"type": "mrkdwn",
+							"text": "*Service:*\n{{service}}\n"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Environment:*\n{{project}}"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*GitHub Build ID:*\n{{build_id}}"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Branch:*\n{{branch}}"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Commit:*\n{{commit}}"
+						},
+						{
+							"type": "mrkdwn",
+							"text": "*Image Tag:*\n{{tag}}"
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block deploy %}
+<h1 class="intro">Kubernetes Branch Deploy</h1>
+<div class="form-group">
+<div class="select" x-data="init()" x-init="project_list()">
+  <label class="selector">Environment</label>
+  <select class="form-control" x-model="selectedProject">
+  <option value="">-- Select Environment --</option>
+  <template x-for="project in projects" :key="project">
+    <option :value="project" x-text="project"></option>
+  </template>
+</select>
+<label class="selector">MM Service</label>
+<select class="form-control" x-model="selectedApp" x-init="$watch('selectedProject', project => app_list(project))">
+  <option value="">-- Select App --</option>
+  <template x-for="app in apps" :key="app">
+    <option :value="app" x-text="app"></option>
+  </template>
+</select>
+<label class="selector">Branch Image</label>
+<select class="form-control" x-model="selectedImg" x-init="$watch('selectedApp', app => images_list(app))">
+  <option value="">-- Select Image --</option>
+  <template x-for="img in images" :key="img">
+    <option :value="img" x-text="img"></option>
+  </template>
+</select>
+<p><button type="button" class="btn" @click="deploy(selectedProject,selectedApp,selectedImg)">Deploy</button></p>
+<template x-if="deploy_loader">
+<div>
+<div class="loader"></div>
+<p class="loader-text" x-text="deploy_loader_text"></p>
+</div>
+</template>
+<template x-if="status_loader">
+  <div>
+  <div class="loader"></div>
+  <p class="loader-text" x-text="status_loader_text"></p>
+  </div>
+</template>
+<template x-if="error">
+<div class="alert alert-danger" x-init="setTimeout(() => error = false, 3000)">
+  <p class="error-text text-center" x-text="error_text"></p>
+</div>
+</template>
+<template x-if="health_check">
+  <div class="alert alert-success" x-init="setTimeout(() => health_check = false, 10000)">
+    <div>Status:<span class="sucess-text text-center" x-text="health_status"></span>&nbsp;Branch:<span class="sucess-text text-center" x-text="image_tag"></span>
+    </div>
+    <div x-show="health_message"><p><span class="sucess-text text-center" x-text="health_message"></span></p></div>
+  </div>
+</template>
+<script>
+  function init(){
+    return{
+      apps: [],
+      projects: [],
+      images: [],
+      selectedProject:null,
+      selectedApp:null,
+      selectedImg:null,
+      error:false,
+      error_text:null,
+      health_check: false,
+      health_status: null,
+      image_tag: null,
+      health_message: null,
+      deploy_loader: false,
+      deploy_loader_text: null,
+      status_loader: false,
+      status_loader_text: null,
+      deploy: async function (project,app,image) {
+        this.deploy_loader = true
+        this.deploy_loader_text = "Submitting Request..."
+        let data = { app: app, project: project, image:image }
+        let options = {method: 'POST', body: JSON.stringify(data), headers: new Headers({"content-type": "application/json"})}
+        await fetch('/deploy', options).then((response) => {
+          if (response.ok) {
+            this.deploy_loader = false
+            this.deploy_loader_text = null
+          } else {
+            this.deploy_loader = false
+            this.deploy_loader_text = null
+            this.error = true
+            this.error_text = "Deployment request failed"
+          }
+        }),
+        this.status_loader = true
+        this.status_loader_text = "Checking Deployment Status..."
+        await fetch('/status', options).then((response) => {
+          if (response.ok) {
+            this.status_loader = false
+            this.health_check = true
+            this.status_loader_text = null
+            response.json().then((response) => {
+              for (let i in response){
+                if ( i == 'status') {
+                  this.health_status = response[i]
+                }
+                if (i == 'image') {
+                  this.image_tag = response[i]
+                }
+              }
+            })
+          } else {
+            this.status_loader = false
+            this.status_loader_text = null
+            this.error = true
+            this.error_text = "The request failed or unknown response"
+          }
+        })
+      },
+      project_list: async function () {
+        await fetch('/list_projects').then((response) => {
+          if (response.ok) {
+            return response.json().then((response) => (this.projects = response))
+          } else {
+             this.error = true
+             this.error_text = "Could not retrieve a list of environments"
+          }
+        })
+      },
+      app_list: async function (project) {
+        this.images = []
+        this.selectedApp = null
+        await fetch('/list_apps?project='+project).then((response) => {
+          if (response.ok) {
+            return response.json().then((response) => (this.apps = response))
+          } else {
+            this.apps = []
+            this.error = true
+            this.error_text = "No applications found for the selected environment"
+          }
+        })
+      },
+      images_list: async function (app) {
+        await fetch('/list_images?app='+app).then((response) => {
+          if (response.ok) {
+           return response.json().then((response) => (this.images = response))
+          } else {
+            this.images = []
+            this.error = true
+            this.error_text = "No images found for the selected application"
+          }
+        })
+      },
+    }
+  }
+</script>
+{% endblock %}

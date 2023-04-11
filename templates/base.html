@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script defer src="https://unpkg.com/alpinejs@3.9.6/dist/cdn.min.js"
+                integrity="sha384-ePWFhMBtKTt9EaWcLLdQdHLiNkvPq60aTJyjqHmaiviau1PteLwtranQldyomX88"
+                crossorigin="anonymous">
+        </script>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/css/deploy.css">
+        <link rel="shortcut icon" href="/static/img/favicon.ico">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="UTF-8">
+        <title>Kubernetes Branch Deploy</title>
+    </head>
+    <body class="body">
+        <div class="mama-logo">
+            <img alt="mama-logo" src=/static/img/logo-icon.svg width="120" height="130">
+        </div>
+        <div class="deploy" text-center>
+            {% block deploy %}
+            {% endblock %}
+        </div>
+    </body>
+    <div>
+    <footer class=page-footer>
+        <p class="login">Logged in as: {{ user }}</p> 
+        <p>&copy; Copyright MamaMoney, made with &#128154; &nbsp;from DevOps &#127866;</p>
+    </footer>
+    </div>
+</html>
